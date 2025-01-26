@@ -31,10 +31,13 @@ export function createClient(request: Request) {
 }
 
 export async function getUser(request: Request) {
-  let { supabase } = createClient(request);
-  let {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase } = createClient(request);
 
-  return { user };
+  try {
+    const { data: { user } } = await supabase.auth.getUser(); 
+    return { user };
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return { user: null }; // Return null or handle error appropriately
+  }
 }

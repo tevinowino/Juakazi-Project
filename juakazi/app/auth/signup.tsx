@@ -3,6 +3,12 @@ import { validateEmail, validatePassword } from "~/validation";
 import { createClient } from "~/supabase.server";
 import { commitSession, getSession, setSuccessMessage } from "~/session.server";
 import { clientPromise } from "~/db.server";
+import {
+  type FileUpload,
+  parseFormData,
+} from "@mjackson/form-data-parser";
+import { uploadImageToCloudinary } from "~/.server/cloudinary.server";
+
 
 interface FieldError {
   email?: string;
@@ -17,14 +23,33 @@ export async function action({ request }) {
   let client = clientPromise;
   let db = client.db("juakazi");
 
+  const uploadHandler = async (fileUpload: FileUpload) => {
+    if (fileUpload.fieldName === "avatar") {
+      // let uuid = crypto.randomUUID();
+      // let storageKey = getStorageKey(uuid);
+      // await fileStorage.set(storageKey, fileUpload)
+      // return fileStorage.get(storageKey)
+      let img = await uploadImageToCloudinary(fileUpload.stream());
+      return img.secure_url;
+    }
+  };
+
+  const formData = await parseFormData(
+    request,
+    uploadHandler
+  );
+
   // Get form data
-  let formData = await request.formData();
+  // let formData = await request.formData();
   let fullName = String(formData.get("fullName")).trim();
   let email = String(formData.get("email")).trim();
   let password = String(formData.get("password"));
   let phone = String(formData.get("phone")).trim();
   let location = String(formData.get("location")).trim();
   let role = String(formData.get("role")) || "client";
+  let avatar = formData.get("avatar");
+
+console.log({avatar})
 
   let fieldErrors: FieldError = {
     email: validateEmail(email),
@@ -56,6 +81,7 @@ export async function action({ request }) {
     role,
     email,
     supabaseId: userData?.user?.id,
+    avatar,
     created_at: new Date(),
   });
 
@@ -80,7 +106,7 @@ export default function Signup({ actionData }) {
     <main className="grid lg:grid-cols-2 gap-8 lg:gap-12 lg:h-screen px-6 xl:max-w-6xl mx-auto">
       <div className="lg:self-center">
         <h1 className="text-4xl font-semibold">Signup</h1>
-        <Form method="post" className="mt-8 space-y-4">
+        <Form method="post" className="mt-8 space-y-4" encType="multipart/form-data">
           {['fullName', 'email', 'password', 'phone', 'location'].map((field) => (
             <div key={field}>
               <label htmlFor={field}>
@@ -111,6 +137,10 @@ export default function Signup({ actionData }) {
               <option value="client">Client (Hiring Workers)</option>
               <option value="worker">Worker (Offering Services)</option>
             </select>
+          </div>
+          <div>
+            <label htmlFor="avatar">Avatar</label>
+            <input type="file" name="avatar" id="avatar" accept="image/*" className="px-4 py-2 rounded-md block mt-2 w-full border" />
           </div>
 
           <button
