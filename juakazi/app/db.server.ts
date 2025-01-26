@@ -21,10 +21,10 @@ if(process.env.NODE_ENV === "production") {
   clientPromise = global.__db;
 }
 
-let ObjectId = BSON.ObjectId;
+// let ObjectId = BSON.ObjectId;
 
 export {
   clientPromise,
-  ObjectId
+  // ObjectId
  };
  
