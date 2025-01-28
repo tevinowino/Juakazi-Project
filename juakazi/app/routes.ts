@@ -8,6 +8,7 @@ export default [
   route("logout", "auth/logout.ts"), 
   route("auth/confirm", "auth/confirm.ts"),
   route("api/jobs", "api/jobs.ts"),
+  route("api/apply", "api/applications.ts"),
   route("apply/:jobId", "application/applicationform.tsx"), 
   route("dashboard","dashboard/index.tsx",[
     index("dashboard/dashboard.tsx"), 
@@ -16,6 +17,7 @@ export default [
     route("add-job", "dashboard/add-jobs.tsx"),
     route("my-jobs", "dashboard/my-jobs.tsx"),
     route("my-posted-jobs", "dashboard/my-posted-jobs.tsx"),
+    route("my-applications", "dashboard/my-applications.tsx"),
 
   ]),
   route("jobs", "jobs/jobs.tsx", [

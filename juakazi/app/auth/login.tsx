@@ -2,17 +2,16 @@ import { data, Form, redirect, useNavigation } from "react-router";
 import { createClient } from "~/supabase.server";
 import { validateEmail, validatePassword } from "~/validation";
 import { commitSession, getSession, setSuccessMessage } from "~/session.server";
+import { useState } from "react";
+import { Mail, Lock, Loader2, LogIn, Eye, EyeOff } from "lucide-react";
 
 export async function action({ request }) {
   let { supabase, headers } = createClient(request);
-
   let formData = await request.formData();
   let session = await getSession(request.headers.get("Cookie"));
 
   let email = formData.get("email");
   let password = formData.get("password");
-
-  // Validate and return errors if any
 
   let fieldErrors = {
     email: validateEmail(email),
@@ -22,8 +21,6 @@ export async function action({ request }) {
   if (Object.values(fieldErrors).some(Boolean)) {
     return data({ fieldErrors }, { status: 400 });
   }
-
-  // Sign in
 
   let { data: userData, error } = await supabase.auth.signInWithPassword({
     email,
@@ -50,68 +47,134 @@ export async function action({ request }) {
   });
 }
 
-export default function Login({ actionData }: Route.ComponentProps) {
-  let navigation = useNavigation();
-  let isSubmitting = navigation.state === "submitting";
+export default function Login({ actionData }: { actionData: any }) {
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
-    <main className="grid lg:grid-cols-2 gap-8 lg:gap-12 lg:h-screen px-6 xl:max-w-6xl mx-auto">
-      <div className="lg:self-center">
-        <h1 className="text-4xl font-semibold">Login</h1>
-        <Form method="post" className="mt-8 space-y-4">
-          <div>
-            <label htmlFor="email">
-              Email{" "}
-              {actionData?.fieldErrors?.email ? (
-                <span className="text-red-500">
-                  {actionData.fieldErrors.email}
-                </span>
-              ) : null}
-            </label>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              autoComplete="off"
-              className={`px-4 py-2 rounded-md block mt-2 w-full border ${
-                actionData?.fieldErrors?.email ? "border-red-500" : ""
-              }`}
-            />
-          </div>
+    <main className="min-h-screen bg-gray-50">
+      <div className="flex min-h-screen">
+        {/* Form Section */}
+        <div className="flex-1 flex items-center justify-center px-6 lg:px-12 py-12">
+          <div className="w-full max-w-md space-y-8">
+            <div className="text-center">
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                Welcome back
+              </h1>
+              <p className="mt-2 text-sm text-gray-600">
+                Please sign in to your account
+              </p>
+            </div>
 
-          <div>
-            <label htmlFor="password">
-              Password{" "}
-              {actionData?.fieldErrors?.password ? (
-                <span className="text-red-500">
-                  {actionData.fieldErrors.password}
-                </span>
-              ) : null}
-            </label>
-            <input
-              type="password"
-              name="password"
-              id="password"
-              autoComplete="off"
-              className={`px-4 py-2 rounded-md block mt-2 w-full border ${
-                actionData?.fieldErrors?.password ? "border-red-500" : ""
-              }`}
-            />
-          </div>
+            <Form method="post" className="mt-8 space-y-6">
+              <div className="space-y-4">
+                {/* Email Field */}
+                <div>
+                  <label 
+                    htmlFor="email" 
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Email address
+                  </label>
+                  <div className="mt-1 relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Mail className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="email"
+                      name="email"
+                      id="email"
+                      autoComplete="off"
+                      className={`block w-full pl-10 pr-3 py-2 border ${
+                        actionData?.fieldErrors?.email 
+                          ? "border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500" 
+                          : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                      } rounded-lg shadow-sm`}
+                    />
+                  </div>
+                  {actionData?.fieldErrors?.email && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {actionData.fieldErrors.email}
+                    </p>
+                  )}
+                </div>
 
-          <button
-            type="submit"
-            className="bg-green-500 hover:bg-green-700 transition ease-in-out duration-300 px-4 py-2 rounded-md active:scale-[.97]"
-          >
-            {isSubmitting ? "Logging in..." : "Log In"}
-          </button>
-        </Form>
-      </div>
-      <div>
-        <img
-          src="https://images.unsplash.com/photo-1463171379579-3fdfb86d6285?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          alt="A person using a computer"
-          className="w-full h-full rounded-lg object-cover"
-        />
+                {/* Password Field */}
+                <div>
+                  <label 
+                    htmlFor="password" 
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Password
+                  </label>
+                  <div className="mt-1 relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      id="password"
+                      autoComplete="off"
+                      className={`block w-full pl-10 pr-10 py-2 border ${
+                        actionData?.fieldErrors?.password 
+                          ? "border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500" 
+                          : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                      } rounded-lg shadow-sm`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      )}
+                    </button>
+                  </div>
+                  {actionData?.fieldErrors?.password && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {actionData.fieldErrors.password}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out disabled:opacity-50"
+                >
+                  <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                    {isSubmitting ? (
+                      <Loader2 className="h-5 w-5 text-blue-300 animate-spin" />
+                    ) : (
+                      <LogIn className="h-5 w-5 text-blue-300" />
+                    )}
+                  </span>
+                  {isSubmitting ? "Signing in..." : "Sign in"}
+                </button>
+              </div>
+            </Form>
+          </div>
+        </div>
+
+        {/* Image Section */}
+        <div className="hidden lg:block relative flex-1">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-800 opacity-90" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-white px-8">
+              <h2 className="text-4xl font-bold mb-4">Welcome Back!</h2>
+              <p className="text-lg text-blue-100">
+                Sign in to access your account and continue your journey.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );

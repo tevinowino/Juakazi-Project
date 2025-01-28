@@ -1,6 +1,18 @@
 import { Outlet, Link, useLoaderData } from "react-router";
 import { getUserData } from "~/hooks/getUserData";
 import { getUser } from "~/supabase.server";
+import { useState } from "react";
+import {
+  LayoutDashboard,
+  Briefcase,
+  PlusCircle,
+  ClipboardList,
+  Users,
+  ChevronLeft,
+  LogOut,
+  Menu,
+  User,
+} from "lucide-react";
 
 export async function loader({ request }) {
   let { user } = await getUser(request);
@@ -8,7 +20,7 @@ export async function loader({ request }) {
   if (user) {
     let supabaseId = user.id;
     let mongoUser = await getUserData(supabaseId);
-    return { user: mongoUser }; // Return user data
+    return { user: mongoUser };
   }
   
   return { user: null };
@@ -16,37 +28,130 @@ export async function loader({ request }) {
 
 export default function DashboardRoot() {
   const { user } = useLoaderData();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  return (
-    <div className="flex">
-      {/* Sidebar Navigation */}
-      <nav className="w-64 min-h-screen bg-gray-800 text-white p-4">
-        <h2 className="text-lg font-bold">Dashboard</h2>
-        <ul className="mt-4 space-y-2">
-          {user?.role === "worker" && (
-            <li>
-              <Link to="/dashboard/my-jobs" className="block py-2 px-4 hover:bg-gray-700">
-                View Available Jobs
-              </Link>
-            </li>
+  const workerLinks = [
+    { to: "/dashboard/my-jobs", icon: Briefcase, label: "View Available Jobs" }
+  ];
+
+  const clientLinks = [
+    { to: "/dashboard/add-job", icon: PlusCircle, label: "Add New Job" },
+    { to: "/dashboard/my-posted-jobs", icon: ClipboardList, label: "My Posted Jobs" },
+    { to: "/dashboard/my-applications", icon: Users, label: "View Applications" }
+  ];
+
+  const navigationLinks = user?.role === "worker" ? workerLinks : clientLinks;
+
+  const SidebarContent = () => (
+    <>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user?.fullName}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <User className="w-6 h-6 text-white" />
+            )}
+          </div>
+          {!isSidebarCollapsed && (
+            <div className="flex-1 min-w-0">
+              <h2 className="text-sm font-medium text-white truncate">
+                {user?.fullName}
+              </h2>
+              <p className="text-xs text-gray-400 capitalize">
+                {user?.role}
+              </p>
+            </div>
           )}
-          {user?.role === "client" && (
-            <li>
-              <Link to="/dashboard/add-job" className="block py-2 px-4 hover:bg-gray-700">
-                Add New Job
-              </Link>
-              <Link to="/dashboard/my-posted-jobs" className="block py-2 px-4 hover:bg-gray-700">
-                My Posted Jobs
-              </Link>
-            </li>
-          )}
-        </ul>
+        </div>
+        <button
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          className="hidden lg:block p-1.5 rounded-lg bg-gray-700 hover:bg-gray-600"
+        >
+          <ChevronLeft className={`w-5 h-5 text-gray-300 transform transition-transform duration-200 
+            ${isSidebarCollapsed ? 'rotate-180' : ''}`}
+          />
+        </button>
+      </div>
+
+      <nav className="space-y-1">
+        <div className="px-3 py-2">
+          <div className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-300">
+            <LayoutDashboard className="w-5 h-5" />
+            {!isSidebarCollapsed && <span>Dashboard</span>}
+          </div>
+        </div>
+
+        {navigationLinks.map((link) => (
+          <Link
+            key={link.to}
+            to={link.to}
+            className="flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+          >
+            <link.icon className="w-5 h-5 flex-shrink-0" />
+            {!isSidebarCollapsed && <span>{link.label}</span>}
+          </Link>
+        ))}
       </nav>
 
-      {/* Main Content */}
-      <div className="flex-1 p-6">
-        <Outlet />
+      <div className="mt-auto pt-8">
+        <Link
+          to="/logout"
+          className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+        >
+          <LogOut className="w-5 h-5" />
+          {!isSidebarCollapsed && <span>Sign Out</span>}
+        </Link>
       </div>
+    </>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {/* Mobile Sidebar Toggle */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <button
+          onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+          className="p-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 lg:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 transform ${
+          isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0 transition-transform duration-200 ease-in-out
+        ${isSidebarCollapsed ? 'w-20' : 'w-64'} 
+        bg-gray-800 p-4 flex flex-col`}
+      >
+        <SidebarContent />
+      </aside>
+
+      {/* Main Content */}
+      <main
+        className={`transition-all duration-200 ease-in-out ${
+          isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+        } pt-16 lg:pt-0`}
+      >
+        <div className="container mx-auto px-4 py-8">
+          <Outlet />
+        </div>
+      </main>
     </div>
   );
 }
