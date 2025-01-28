@@ -119,9 +119,9 @@ export default function App({ loaderData }: Route.ComponentProps) {
             />
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-6 sm:space-x-3 text-sm " >
             <NavLink to="/" icon={Home}>Home</NavLink>
-            <NavLink to="/services" icon={Briefcase}>Services</NavLink>
+            <NavLink to="/jobs" icon={Briefcase}>Find Work</NavLink>
             <NavLink to="/about" icon={Info}>About Us</NavLink>
             <NavLink to="/contact" icon={Phone}>Contact</NavLink>
           </nav>
@@ -129,7 +129,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
           <div className="hidden md:flex items-center space-x-4">
             {userEmail ? (
               <div className="flex items-center space-x-4">
-                <span className="text-gray-700 flex items-center gap-2">
+                <span className=" flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-3xl">
                   <User size={18} /> {userEmail}
                 </span>
                 <Link 
@@ -174,7 +174,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
           <div className="md:hidden absolute w-full bg-white/95 backdrop-blur-md shadow-lg">
             <nav className="flex flex-col p-4 space-y-4">
               <MobileNavLink to="/" icon={Home}>Home</MobileNavLink>
-              <MobileNavLink to="/services" icon={Briefcase}>Services</MobileNavLink>
+              <MobileNavLink to="/jobs" icon={Briefcase}>Find Work</MobileNavLink>
               <MobileNavLink to="/about" icon={Info}>About Us</MobileNavLink>
               <MobileNavLink to="/contact" icon={Phone}>Contact</MobileNavLink>
 

@@ -10,36 +10,29 @@ import {
     Phone,
     Briefcase
 } from "lucide-react";
-import { Form, Link, useLoaderData, useParams } from "react-router";
+import { Form, Link, useLoaderData} from "react-router";
 import { clientPromise } from '~/db.server';
-import { stringFromBase64URL } from '@supabase/ssr';
 import { ObjectId } from 'mongodb';
 
 export async function loader({ params }) {
     const { jobId } = params;
     const jobIdString = String(jobId);
-    console.log(jobIdString);
+    // console.log((jobIdString));
 
     let client = clientPromise;
     let db = client.db("juakazi");
 
     // If jobId is supposed to be an ObjectId, convert it
     const job = await db.collection("jobs").findOne({ _id: new ObjectId(jobIdString) });
-    console.log(job);
-    return { jobDetails: job };
+    
+    // console.log(job);
+    return { jobDetails: job, jobIdString };
 }
 
 export default function JobApplicationForm() {
-    let {jobDetails} = useLoaderData();
-
-    // const jobDetails = {
-    //     title: "Web Development Project",
-    //     description: "Looking for a skilled web developer to create a responsive e-commerce platform with modern React technologies.",
-    //     category: "Web Development",
-    //     location: "Nairobi, Kenya",
-    //     budget: 150000,
-    //     createdAt: new Date()
-    // };
+    let {jobDetails, jobIdString} = useLoaderData();
+    // console.log(jobDetails);
+    // console.log({jobIdString});
 
 
     return (
@@ -73,7 +66,7 @@ export default function JobApplicationForm() {
                 {/* Application Form Section */}
                 <div className="p-8 space-y-6">
                     <h3 className="text-2xl font-bold text-center text-gray-800 mb-6">Submit Your Application</h3>
-                    <Form className="space-y-5">
+                    <Form action="/api/apply" method="post" className="space-y-5">
                         <div className="relative">
                             <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input
@@ -127,6 +120,7 @@ export default function JobApplicationForm() {
                                 required
                             />
                         </div>
+                        <input type="hidden" name="jobId" value={jobIdString} />
 
                         <button
                             type="submit"
