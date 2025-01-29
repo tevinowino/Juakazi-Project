@@ -8,7 +8,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -36,6 +35,7 @@ import {
   Instagram, 
   Linkedin 
 } from "lucide-react";
+
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -177,14 +177,18 @@ export default function App({ loaderData }: Route.ComponentProps) {
               <MobileNavLink to="/jobs" icon={Briefcase}>Find Work</MobileNavLink>
               <MobileNavLink to="/about" icon={Info}>About Us</MobileNavLink>
               <MobileNavLink to="/contact" icon={Phone}>Contact</MobileNavLink>
+              {userEmail ? (
+                              <Link to="/dashboard" className="w-fit bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-4 py-2 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition">Dashboard</Link>
+
+              ): null}
 
               {userEmail ? (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-gray-700">
+                  <div className="flex items-center gap-2 text-white bg-blue-500 px-2 py-1 rounded-full w-fit">
                     <User size={18} /> {userEmail}
                   </div>
                   <Form method="post" action="/logout">
-                    <button className="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2">
+                    <button className=" bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2 w-fit">
                       <LogOut size={20} /> Logout
                     </button>
                   </Form>

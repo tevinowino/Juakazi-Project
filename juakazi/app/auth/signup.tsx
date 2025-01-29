@@ -35,6 +35,10 @@ export async function action({ request }) {
   const uploadHandler = async (fileUpload: FileUpload) => {
     if (fileUpload.fieldName === "avatar") {
       let img = await uploadImageToCloudinary(fileUpload.stream());
+      if (!img) {
+        let defaultImage = "/placeholder-pfp.jpg";
+        return defaultImage;
+      }
       return img.secure_url;
     }
   };

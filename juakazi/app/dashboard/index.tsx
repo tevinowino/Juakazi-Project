@@ -1,4 +1,4 @@
-import { Outlet, Link, useLoaderData } from "react-router";
+import { Outlet, Link, useLoaderData, Form } from "react-router";
 import { getUserData } from "~/hooks/getUserData";
 import { getUser } from "~/supabase.server";
 import { useState } from "react";
@@ -16,13 +16,13 @@ import {
 
 export async function loader({ request }) {
   let { user } = await getUser(request);
-  
+
   if (user) {
     let supabaseId = user.id;
     let mongoUser = await getUserData(supabaseId);
     return { user: mongoUser };
   }
-  
+
   return { user: null };
 }
 
@@ -32,10 +32,12 @@ export default function DashboardRoot() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const workerLinks = [
+    {to: "/dashboard", icon: User, label: "Profile"},
     { to: "/dashboard/my-jobs", icon: Briefcase, label: "View Available Jobs" }
   ];
 
   const clientLinks = [
+    {to: "/dashboard", icon: User, label: "Profile"},
     { to: "/dashboard/add-job", icon: PlusCircle, label: "Add New Job" },
     { to: "/dashboard/my-posted-jobs", icon: ClipboardList, label: "My Posted Jobs" },
     { to: "/dashboard/my-applications", icon: Users, label: "View Applications" }
@@ -104,8 +106,16 @@ export default function DashboardRoot() {
           to="/logout"
           className="flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
         >
-          <LogOut className="w-5 h-5" />
-          {!isSidebarCollapsed && <span>Sign Out</span>}
+          {!isSidebarCollapsed &&
+            <span>
+              <Form method="post" action="/logout">
+                <button className=" text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition flex items-center gap-2">
+                  <LogOut className="w-5 h-5" />
+                  Logout
+                </button>
+              </Form>
+
+            </span>}
         </Link>
       </div>
     </>
@@ -116,6 +126,8 @@ export default function DashboardRoot() {
       {/* Mobile Sidebar Toggle */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
+          type="button"
+          title="Toggle Sidebar"
           onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
           className="p-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700"
         >
@@ -133,9 +145,8 @@ export default function DashboardRoot() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 transform ${
-          isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 transition-transform duration-200 ease-in-out
+        className={`fixed inset-y-0 left-0 z-50 transform ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } lg:translate-x-0 transition-transform duration-200 ease-in-out
         ${isSidebarCollapsed ? 'w-20' : 'w-64'} 
         bg-gray-800 p-4 flex flex-col`}
       >
@@ -144,9 +155,8 @@ export default function DashboardRoot() {
 
       {/* Main Content */}
       <main
-        className={`transition-all duration-200 ease-in-out ${
-          isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
-        } pt-16 lg:pt-0`}
+        className={`transition-all duration-200 ease-in-out ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+          } pt-16 lg:pt-0`}
       >
         <div className="container mx-auto px-4 py-8">
           <Outlet />
