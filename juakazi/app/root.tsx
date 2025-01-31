@@ -35,6 +35,7 @@ import {
   Instagram, 
   Linkedin 
 } from "lucide-react";
+import { getUserData } from "./hooks/getUserData";
 
 
 export const links: Route.LinksFunction = () => [
@@ -58,9 +59,13 @@ export async function loader({ request }: Route.LoaderArgs) {
   let { user } = await getUser(request);
 
   let userEmail = user?.email;
+  let supabaseId = user?.id
+
+  let mongoUser = await getUserData(supabaseId);
+  let role = mongoUser?.role;
 
   return data(
-    { toastMessage, userEmail },
+    { toastMessage, userEmail, role },
     {
       headers: {
         "Set-Cookie": await commitSession(session),
@@ -89,7 +94,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  let { toastMessage, userEmail } = loaderData;
+  let { toastMessage, userEmail, role } = loaderData;
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -122,8 +127,8 @@ export default function App({ loaderData }: Route.ComponentProps) {
           <nav className="hidden md:flex items-center space-x-6 sm:space-x-3 text-sm " >
             <NavLink to="/" icon={Home}>Home</NavLink>
             <NavLink to="/jobs" icon={Briefcase}>Find Work</NavLink>
-            <NavLink to="/about" icon={Info}>About Us</NavLink>
-            <NavLink to="/contact" icon={Phone}>Contact</NavLink>
+            <NavLink to="/about-us" icon={Info}>About Us</NavLink>
+            <NavLink to="/contact-us" icon={Phone}>Contact</NavLink>
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
@@ -131,6 +136,9 @@ export default function App({ loaderData }: Route.ComponentProps) {
               <div className="flex items-center space-x-4">
                 <span className=" flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-3xl">
                   <User size={18} /> {userEmail}
+                </span>
+                <span className=" flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded">
+                  {role}
                 </span>
                 <Link 
                   to="/dashboard" 
@@ -175,8 +183,8 @@ export default function App({ loaderData }: Route.ComponentProps) {
             <nav className="flex flex-col p-4 space-y-4">
               <MobileNavLink to="/" icon={Home}>Home</MobileNavLink>
               <MobileNavLink to="/jobs" icon={Briefcase}>Find Work</MobileNavLink>
-              <MobileNavLink to="/about" icon={Info}>About Us</MobileNavLink>
-              <MobileNavLink to="/contact" icon={Phone}>Contact</MobileNavLink>
+              <MobileNavLink to="/about-us" icon={Info}>About Us</MobileNavLink>
+              <MobileNavLink to="/contact-us" icon={Phone}>Contact</MobileNavLink>
               {userEmail ? (
                               <Link to="/dashboard" className="w-fit bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-4 py-2 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition">Dashboard</Link>
 

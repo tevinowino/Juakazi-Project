@@ -8,11 +8,14 @@ import { getUser } from "~/supabase.server";
 import { getUserData } from "~/hooks/getUserData";
 import { clientPromise } from "~/db.server";
 
-export async function loader({ request }) {
+export async function loader({ request }: { request: Request }) {
   let { user } = await getUser(request);
   let supabaseId = user?.id;
-  let mongoUser = await getUserData(supabaseId);
-  let userRole = mongoUser?.role;
+
+  if (!supabaseId) {
+    throw new Error("User ID is not defined");
+  }
+  let mongoUser = await getUserData(supabaseId);  let userRole = mongoUser?.role;
   const client = clientPromise;
   const db = client.db("juakazi");
   const jobsArray = await db.collection("jobs").find().toArray();
@@ -41,7 +44,7 @@ export default function AllJobs() {
   const minPrice = searchParams.get("minPrice") || "";
   const maxPrice = searchParams.get("maxPrice") || "";
 
-  const filteredJobs = jobs.filter((job) => {
+  const filteredJobs = jobs.filter((job: any) => {
     const price = Number(job.budget) || 0;
     const matchesSearch = searchTerm === "" ||
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -54,7 +57,7 @@ export default function AllJobs() {
       (maxPrice ? price <= Number(maxPrice) : true);
   });
 
-  function updateFilter(key, value) {
+  function updateFilter(key: string, value: string) {
     const newParams = new URLSearchParams(searchParams);
     if (value) newParams.set(key, value);
     else newParams.delete(key);
@@ -111,6 +114,7 @@ export default function AllJobs() {
               </div>
 
               <select
+              title="Category"
                 className="w-full p-3 border-2 border-gray-200 rounded-xl bg-white hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 outline-none cursor-pointer"
                 value={selectedCategory}
                 onChange={(e) => updateFilter("category", e.target.value)}
@@ -122,6 +126,7 @@ export default function AllJobs() {
               </select>
 
               <select
+              title="Location"
                 className="w-full p-3 border-2 border-gray-200 rounded-xl bg-white hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 outline-none cursor-pointer"
                 value={selectedLocation}
                 onChange={(e) => updateFilter("location", e.target.value)}

@@ -8,7 +8,7 @@ import { getSession, setSuccessMessage } from "~/session.server";
 import { 
     User, Briefcase, Mail, Phone, DollarSign, FileText, 
     Clock, CheckCircle, XCircle, MessageCircle, ExternalLink,
-    ChevronDown, Search, Filter, SlidersHorizontal
+    ChevronDown, Search
   } from "lucide-react";import { useState } from "react";
 
 // Loader function to fetch applications
@@ -20,6 +20,7 @@ export async function loader({ request }) {
     let { user } = await getUser(request);
     let supabaseId = user?.id;
     let mongoUser = await getUserData(supabaseId);
+    console.log(mongoUser);
 
     let jobIds = mongoUser?.jobs || []; // Ensure jobIds is an array
 

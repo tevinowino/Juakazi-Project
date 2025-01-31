@@ -155,7 +155,7 @@ const JobCard = ({ job, onEdit }: JobCardProps) => {
 
           <div className="flex items-center gap-2">
             <DollarSign className="text-purple-500" size={18} />
-            <span className="font-semibold">${job.budget}</span>
+            <span className="font-semibold">KSH {job.budget}</span>
           </div>
 
           <div className="flex items-center gap-2">
